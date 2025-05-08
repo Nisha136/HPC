@@ -8,6 +8,11 @@ int main() {
     cout << "Enter number of elements: ";
     cin >> n;
 
+    if (n <= 0) {
+        cout << "Invalid number of elements.\n";
+        return 1;
+    }
+
     vector<int> arr(n);
     cout << "Enter " << n << " elements:\n";
     for (int i = 0; i < n; ++i)
@@ -19,14 +24,12 @@ int main() {
 
     #pragma omp parallel for reduction(min:minVal)
     for (int i = 0; i < n; ++i) {
-        if (arr[i] < minVal)
-            minVal = arr[i];
+        minVal = arr[i];
     }
 
     #pragma omp parallel for reduction(max:maxVal)
     for (int i = 0; i < n; ++i) {
-        if (arr[i] > maxVal)
-            maxVal = arr[i];
+        maxVal = arr[i];
     }
 
     #pragma omp parallel for reduction(+:sum)
