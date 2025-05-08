@@ -7,7 +7,7 @@ using namespace std;
 // Merge two halves
 void merge(vector<int>& arr, int left, int mid, int right) {
     vector<int> temp;
-    int i = left, j = mid+1;
+    int i = left, j = mid + 1;
 
     while (i <= mid && j <= right) {
         if (arr[i] < arr[j])
@@ -29,7 +29,7 @@ void sequentialMergeSort(vector<int>& arr, int left, int right) {
     int mid = (left + right) / 2;
 
     sequentialMergeSort(arr, left, mid);
-    sequentialMergeSort(arr, mid+1, right);
+    sequentialMergeSort(arr, mid + 1, right);
     merge(arr, left, mid, right);
 }
 
@@ -45,11 +45,11 @@ void parallelMergeSort(vector<int>& arr, int left, int right, int depth = 0) {
             parallelMergeSort(arr, left, mid, depth + 1);
 
             #pragma omp section
-            parallelMergeSort(arr, mid+1, right, depth + 1);
+            parallelMergeSort(arr, mid + 1, right, depth + 1);
         }
     } else {
         sequentialMergeSort(arr, left, mid);
-        sequentialMergeSort(arr, mid+1, right);
+        sequentialMergeSort(arr, mid + 1, right);
     }
 
     merge(arr, left, mid, right);
@@ -69,15 +69,24 @@ int main() {
     vector<int> parArr = original;
 
     double startSeq = omp_get_wtime();
-    sequentialMergeSort(seqArr, 0, n-1);
+    sequentialMergeSort(seqArr, 0, n - 1);
     double endSeq = omp_get_wtime();
 
     double startPar = omp_get_wtime();
-    parallelMergeSort(parArr, 0, n-1);
+    parallelMergeSort(parArr, 0, n - 1);
     double endPar = omp_get_wtime();
 
     cout << "\nTime taken by Sequential Merge Sort: " << (endSeq - startSeq) << " seconds\n";
     cout << "Time taken by Parallel Merge Sort  : " << (endPar - startPar) << " seconds\n";
 
+    cout << "\nSorted array (Sequential): ";
+    for (int i = 0; i < n; ++i)
+        cout << seqArr[i] << " ";
+
+    cout << "\nSorted array (Parallel)  : ";
+    for (int i = 0; i < n; ++i)
+        cout << parArr[i] << " ";
+
+    cout << endl;
     return 0;
 }
