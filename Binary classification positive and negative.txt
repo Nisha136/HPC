@@ -1,0 +1,66 @@
+# Step 1: Import necessary libraries
+import numpy as np
+import matplotlib.pyplot as plt
+from tensorflow.keras.datasets import imdb
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Embedding, Dense, Dropout, Flatten
+from tensorflow.keras.optimizers import Adam
+from sklearn.metrics import classification_report, confusion_matrix
+
+# Step 2: Load the IMDB dataset (most frequent 10,000 words)
+vocab_size = 10000
+maxlen = 200  # Max review length (in words)
+
+(x_train, y_train), (x_test, y_test) = imdb.load_data(num_words=vocab_size)
+
+# Step 3: Pad sequences to ensure equal length
+x_train = pad_sequences(x_train, maxlen=maxlen)
+x_test = pad_sequences(x_test, maxlen=maxlen)
+
+# Step 4: Build the Deep Neural Network model
+model = Sequential()
+model.add(Embedding(input_dim=vocab_size, output_dim=128, input_length=maxlen))
+model.add(Flatten())
+model.add(Dense(128, activation='relu'))
+model.add(Dropout(0.4))
+model.add(Dense(64, activation='relu'))
+model.add(Dropout(0.3))
+model.add(Dense(1, activation='sigmoid'))  # Binary classification output
+
+# Step 5: Compile the model
+model.compile(optimizer=Adam(), loss='binary_crossentropy', metrics=['accuracy'])
+
+# Step 6: Train the model
+history = model.fit(x_train, y_train, epochs=5, batch_size=128, validation_split=0.2, verbose=1)
+
+# Step 7: Evaluate the model
+loss, accuracy = model.evaluate(x_test, y_test)
+print(f"Test Accuracy: {accuracy:.4f}")
+
+# Step 8: Predictions and Metrics
+y_pred_prob = model.predict(x_test)
+y_pred = (y_pred_prob > 0.5).astype("int32")
+
+print("\nClassification Report:\n")
+print(classification_report(y_test, y_pred))
+
+# Step 9: Confusion Matrix
+import seaborn as sns
+import pandas as pd
+cm = confusion_matrix(y_test, y_pred)
+
+plt.figure(figsize=(6, 5))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=["Negative", "Positive"], yticklabels=["Negative", "Positive"])
+plt.title('Confusion Matrix')
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.show()
+
+# Step 10: Show actual vs predicted for first 20 samples
+actual_predicted = pd.DataFrame({
+    'Actual': y_test[:20],
+    'Predicted': y_pred[:20].flatten()
+})
+print("\nSample Predictions (0 = Negative, 1 = Positive):")
+print(actual_predicted)
