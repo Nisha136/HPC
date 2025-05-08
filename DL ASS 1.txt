@@ -1,0 +1,66 @@
+# Step 1: Import Required Libraries
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from tensorflow import keras
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn.datasets import load_boston
+
+# Step 2: Load Boston Housing Dataset
+boston = load_boston()  
+X = boston.data
+y = boston.target
+
+# Step 3: Split the Data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Step 4: Normalize the Features
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Step 5: Build the DNN Model (Linear Regression)
+model = keras.Sequential([
+    keras.layers.Dense(1, input_shape=(X_train.shape[1],))  # Linear regression
+])
+
+# Step 6: Compile the Model
+model.compile(optimizer='adam', loss='mse', metrics=['mae'])
+
+# Step 7: Train the Model
+history = model.fit(X_train, y_train, epochs=100, validation_split=0.1, verbose=0)
+
+# Step 8: Evaluate the Model
+test_loss, test_mae = model.evaluate(X_test, y_test)
+print(f"\nTest MAE: {test_mae:.2f}")
+
+# Step 9: Plot Training Loss
+plt.figure(figsize=(8, 5))
+plt.plot(history.history['loss'], label='Train Loss')
+plt.plot(history.history['val_loss'], label='Val Loss')
+plt.xlabel('Epoch')
+plt.ylabel('MSE Loss')
+plt.legend()
+plt.title('Training and Validation Loss')
+plt.grid(True)
+plt.show()
+
+# Step 10: Predict and Compare
+y_pred = model.predict(X_test).flatten()
+
+# Plot actual vs predicted
+plt.figure(figsize=(6, 6))
+plt.scatter(y_test, y_pred, color='blue', alpha=0.7)
+plt.xlabel("Actual Prices")
+plt.ylabel("Predicted Prices")
+plt.title("Actual vs Predicted House Prices")
+plt.plot([min(y_test), max(y_test)], [min(y_test), max(y_test)], 'r--')
+plt.grid(True)
+plt.show()
+
+# Step 11: Display Actual and Predicted Values
+results_df = pd.DataFrame({'Actual Price': y_test, 'Predicted Price': y_pred})
+print("\nFirst 10 Actual vs Predicted Prices:\n")
+print(results_df.head(10).to_string(index=False))
