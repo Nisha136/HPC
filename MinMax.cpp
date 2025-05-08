@@ -1,6 +1,7 @@
 #include <iostream>
 #include <omp.h>
 #include <vector>
+#include <algorithm> // For std::min and std::max
 using namespace std;
 
 int main() {
@@ -23,19 +24,16 @@ int main() {
     int sum = 0;
 
     #pragma omp parallel for reduction(min:minVal)
-    for (int i = 0; i < n; ++i) {
-        minVal = arr[i];
-    }
+    for (int i = 0; i < n; ++i)
+        minVal = min(minVal, arr[i]);
 
     #pragma omp parallel for reduction(max:maxVal)
-    for (int i = 0; i < n; ++i) {
-        maxVal = arr[i];
-    }
+    for (int i = 0; i < n; ++i)
+        maxVal = max(maxVal, arr[i]);
 
     #pragma omp parallel for reduction(+:sum)
-    for (int i = 0; i < n; ++i) {
+    for (int i = 0; i < n; ++i)
         sum += arr[i];
-    }
 
     double average = static_cast<double>(sum) / n;
 
