@@ -1,0 +1,77 @@
+# Step 1: Import required libraries
+import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from tensorflow.keras import layers, models
+from sklearn.metrics import classification_report, confusion_matrix
+import seaborn as sns
+import pandas as pd
+
+# Step 2: Load the Fashion MNIST dataset
+fashion_mnist = tf.keras.datasets.fashion_mnist
+(x_train, y_train), (x_test, y_test) = fashion_mnist.load_data()
+
+# Step 3: Normalize the data
+x_train = x_train / 255.0
+x_test = x_test / 255.0
+
+# Reshape data for CNN (28x28x1)
+x_train = x_train.reshape(-1, 28, 28, 1)
+x_test = x_test.reshape(-1, 28, 28, 1)
+
+# Class labels
+class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
+               'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle boot']
+
+# Step 4: Build the CNN model
+model = models.Sequential([
+    layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)),
+    layers.MaxPooling2D((2, 2)),
+
+    layers.Conv2D(64, (3, 3), activation='relu'),
+    layers.MaxPooling2D((2, 2)),
+
+    layers.Flatten(),
+    layers.Dense(128, activation='relu'),
+    layers.Dropout(0.4),
+    layers.Dense(10, activation='softmax')
+])
+
+# Step 5: Compile the model
+model.compile(optimizer='adam',
+              loss='sparse_categorical_crossentropy',
+              metrics=['accuracy'])
+
+# Step 6: Train the model
+history = model.fit(x_train, y_train, epochs=10, batch_size=64,
+                    validation_split=0.2, verbose=1)
+
+# Step 7: Evaluate the model
+test_loss, test_acc = model.evaluate(x_test, y_test)
+print(f"\n✅ Test Accuracy: {test_acc:.4f}")
+
+# Step 8: Make predictions
+y_pred = model.predict(x_test)
+y_pred_classes = np.argmax(y_pred, axis=1)
+
+# Step 9: Classification report
+print("\n📊 Classification Report:\n")
+print(classification_report(y_test, y_pred_classes, target_names=class_names))
+
+# Step 10: Confusion Matrix
+conf_matrix = confusion_matrix(y_test, y_pred_classes)
+plt.figure(figsize=(10, 8))
+sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues',
+            xticklabels=class_names, yticklabels=class_names)
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
+plt.title("Confusion Matrix")
+plt.show()
+
+# Step 11: Show sample predictions
+print("\n🔍 Sample Predictions (First 10):\n")
+sample_df = pd.DataFrame({
+    'Actual': [class_names[y] for y in y_test[:10]],
+    'Predicted': [class_names[y] for y in y_pred_classes[:10]]
+})
+print(sample_df)
